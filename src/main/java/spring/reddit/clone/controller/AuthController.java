@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import spring.reddit.clone.controller.dto.AuthenticationResponse;
 import spring.reddit.clone.controller.dto.LoginRequest;
 import spring.reddit.clone.controller.dto.RegisterRequest;
 import spring.reddit.clone.exeption.SpringRedditException;
@@ -29,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public void login(@RequestBody LoginRequest loginRequest){
-        authService.login(loginRequest);
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest){
+        return authService.login(loginRequest);
     }
 }

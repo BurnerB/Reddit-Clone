@@ -1,8 +1,10 @@
 package spring.reddit.clone.exeption;
 
-import org.springframework.mail.MailException;
+public class SpringRedditException extends RuntimeException {
+    public SpringRedditException(String exMessage, Exception exception) {
+        super(exMessage, exception);
+    }
 
-public class SpringRedditException extends Throwable {
     public SpringRedditException(String exMessage) {
         super(exMessage);
     }

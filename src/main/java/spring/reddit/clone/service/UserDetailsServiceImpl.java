@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 
+//implements user details service interface
 @Service
 @AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {

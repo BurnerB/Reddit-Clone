@@ -3,6 +3,7 @@ package spring.reddit.clone.config;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,8 +19,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
 
+    //whenever we autowire auth manager spring finds this bean and injects it into our class
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception{
+        return super.authenticationManagerBean();
+    }
 //    Overide and disable this method as we are using jwt tokens
     public void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf()
@@ -31,11 +36,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated();
     }
 
+    //create auth manager
+    //method injection
+    //userDetailsService loads user data from db/is interface needs implementation class
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
     authenticationManagerBuilder.userDetailsService(userDetailsService)
                                 .passwordEncoder(passwordEncoder());
     }
+
 
     @Bean
     PasswordEncoder passwordEncoder(){

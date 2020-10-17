@@ -1,7 +1,10 @@
 package spring.reddit.clone.service;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import spring.reddit.clone.Model.NotificationEmail;
@@ -9,16 +12,20 @@ import spring.reddit.clone.Model.User;
 import spring.reddit.clone.Model.VerificationToken;
 import spring.reddit.clone.Repository.UserRepository;
 import spring.reddit.clone.Repository.VerificationTokenRepository;
+import spring.reddit.clone.controller.dto.AuthenticationResponse;
 import spring.reddit.clone.controller.dto.LoginRequest;
 import spring.reddit.clone.controller.dto.RegisterRequest;
 import spring.reddit.clone.exeption.SpringRedditException;
+import spring.reddit.clone.security.JwtProvider;
 
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+//Auth service contains logic to create user auth tokens and auth manager to perform login
 //field vs constructor injection??
+//Authmanager is an interface and thus needs a specific bean created or raises an error because it hgas multiple implementations
 @Service
 @AllArgsConstructor
 public class AuthService {
@@ -27,10 +34,12 @@ public class AuthService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
 
     @Transactional
     public void signup(RegisterRequest registerRequest) throws SpringRedditException {
-        User user= new User();
+        User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -39,7 +48,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token=generateVerificationToken(user);
+        String token = generateVerificationToken(user);
 
         mailService.sendMail(new NotificationEmail("Please Activate your Account",
                 user.getEmail(), "Thank you for signing up to Spring Reddit, " +
@@ -49,7 +58,7 @@ public class AuthService {
 
     private String generateVerificationToken(User user) {
         String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken= new VerificationToken();
+        VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
         verificationToken.setUser(user);
 
@@ -70,6 +79,13 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void login(LoginRequest loginRequest) {
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        //If authenticate object is found user is logged in if not is not logged in
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = jwtProvider.generateToken(authenticate);
+        return new AuthenticationResponse(token, loginRequest.getUsername());
+
     }
 }
