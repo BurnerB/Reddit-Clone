@@ -12,9 +12,9 @@ import spring.reddit.clone.Model.User;
 import spring.reddit.clone.Model.VerificationToken;
 import spring.reddit.clone.Repository.UserRepository;
 import spring.reddit.clone.Repository.VerificationTokenRepository;
-import spring.reddit.clone.controller.dto.AuthenticationResponse;
-import spring.reddit.clone.controller.dto.LoginRequest;
-import spring.reddit.clone.controller.dto.RegisterRequest;
+import spring.reddit.clone.dto.AuthenticationResponse;
+import spring.reddit.clone.dto.LoginRequest;
+import spring.reddit.clone.dto.RegisterRequest;
 import spring.reddit.clone.exeption.SpringRedditException;
 import spring.reddit.clone.security.JwtProvider;
 
@@ -85,7 +85,7 @@ public class AuthService {
         //If authenticate object is found user is logged in if not is not logged in
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         String token = jwtProvider.generateToken(authenticate);
-        return new AuthenticationResponse(token, loginRequest.getUsername());
+        return new AuthenticationResponse( loginRequest.getUsername(),token);
 
     }
 }
